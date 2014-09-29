@@ -198,6 +198,14 @@ type Mesh struct {
 	// and re-upload the data slice to the graphics hardware.
 	ColorsChanged bool
 
+	// The slice of normals for the mesh.
+	Normals []Vec3
+
+	// Weather or not the normals have changed since the last time the
+	// mesh was loaded. If set to true the renderer should take note and
+	// re-upload the data slice to the graphics hardware.
+	NormalsChanged bool
+
 	// A slice of barycentric coordinates for the mesh.
 	Bary []Vec3
 
@@ -263,6 +271,8 @@ func (m *Mesh) Copy() *Mesh {
 		false, // VerticesChanged -- not copied.
 		make([]Color, len(m.Colors)),
 		false, // ColorsChanged -- not copied.
+		make([]Vec3, len(m.Normals)),
+		false, // NormalsChanged -- not copied.
 		make([]Vec3, len(m.Bary)),
 		false, // BaryChanged -- not copied.
 		make([]TexCoordSet, len(m.TexCoords)),
@@ -272,6 +282,7 @@ func (m *Mesh) Copy() *Mesh {
 	copy(cpy.Indices, m.Indices)
 	copy(cpy.Vertices, m.Vertices)
 	copy(cpy.Colors, m.Colors)
+	copy(cpy.Normals, m.Normals)
 	copy(cpy.Bary, m.Bary)
 	for index, set := range m.TexCoords {
 		setCpy := TexCoordSet{
@@ -342,7 +353,7 @@ func (m *Mesh) CalculateBounds() {
 //
 // The mesh's read lock must be held for this method to operate safely.
 func (m *Mesh) HasChanged() bool {
-	if m.IndicesChanged || m.VerticesChanged || m.ColorsChanged || m.BaryChanged {
+	if m.IndicesChanged || m.VerticesChanged || m.ColorsChanged || m.NormalsChanged || m.BaryChanged {
 		return true
 	}
 	for _, texCoordSet := range m.TexCoords {
@@ -367,6 +378,7 @@ func (m *Mesh) ClearData() {
 		m.Indices = nil
 		m.Vertices = nil
 		m.Colors = nil
+		m.Normals = nil
 		m.Bary = nil
 		m.TexCoords = nil
 		m.Attribs = nil
@@ -388,6 +400,8 @@ func (m *Mesh) Reset() {
 	m.VerticesChanged = false
 	m.Colors = m.Colors[:0]
 	m.ColorsChanged = false
+	m.Normals = m.Normals[:0]
+	m.NormalsChanged = false
 	m.Bary = m.Bary[:0]
 	m.BaryChanged = false
 	for _, tcs := range m.TexCoords {
