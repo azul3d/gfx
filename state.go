@@ -17,12 +17,12 @@ package gfx
 type State struct {
 	// A single alpha transparency mode describing how transparent parts of
 	// of the object are to be rendered.
-	// Must be one of: NoAlpha, BlendedAlpha, BinaryAlpha, AlphaToCoverage
+	// Must be one of: NoAlpha, AlphaBlend, BinaryAlpha, AlphaToCoverage
 	AlphaMode AlphaMode
 
 	// Blend represents how blending between existing (source) and new
 	// (destination) pixels in the color buffer occurs when AlphaMode ==
-	// BlendedAlpha.
+	// AlphaBlend.
 	Blend BlendState
 
 	// Whether or not red/green/blue/alpha should be written to the color
