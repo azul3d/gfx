@@ -133,7 +133,9 @@ func (t *Transform) build() {
 		parent = t.parent.Transform()
 	}
 
-	if t.built != nil && (t.lastParent != nil && parent != nil && t.lastParent.Equals(parent.Mat4())) {
+	nilParents := t.lastParent == nil && parent == nil
+	nonNilParents := t.lastParent != nil && parent != nil
+	if t.built != nil && (nilParents || (nonNilParents && t.lastParent.Equals(parent.Mat4()))) {
 		// No update is required.
 		return
 	}
