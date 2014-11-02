@@ -5,6 +5,7 @@
 package gfx
 
 import (
+	"reflect"
 	"sync"
 
 	"azul3d.org/lmath.v1"
@@ -367,6 +368,178 @@ func (m *Mesh) HasChanged() bool {
 		}
 	}
 	return false
+}
+
+// fastAppendSlice is basically reflect.AppendSlice, but it implements fast
+// paths for common types.
+func fastAppendSlice(a, b interface{}) interface{} {
+	switch aa := a.(type) {
+	case []float32:
+		return append(aa, b.([]float32)...)
+	case [][]float32:
+		return append(aa, b.([][]float32)...)
+	case []Vec3:
+		return append(aa, b.([]Vec3)...)
+	case [][]Vec3:
+		return append(aa, b.([][]Vec3)...)
+	case []Mat4:
+		return append(aa, b.([]Mat4)...)
+	case [][]Mat4:
+		return append(aa, b.([][]Mat4)...)
+	case []Vec4:
+		return append(aa, b.([]Vec4)...)
+	case [][]Vec4:
+		return append(aa, b.([][]Vec4)...)
+	case []Color:
+		return append(aa, b.([]Color)...)
+	case [][]Color:
+		return append(aa, b.([][]Color)...)
+	default:
+		return reflect.AppendSlice(reflect.ValueOf(a), reflect.ValueOf(b)).Interface()
+	}
+}
+
+// Append appends the other mesh's data slices to this one.
+//
+// This function can properly maintain the existing index type of a mesh, so
+// that in any of the following cases:
+//
+//  mesh.Append(mesh)
+//  indexedMesh.Append(indexedMesh)
+//  indexedMesh.Append(mesh)
+//  mesh.Append(indexedMesh)
+//
+// The original mesh's indexing is kept: anything appended to an indexed mesh
+// always ends up as an indexed mesh, and vice versa.
+//
+// Only data slices that both meshes have in common are kept: e.g. if only one
+// mesh has vertex colors, the mesh (m) will have it's vertex colors set to
+// nil. You can check which data slices are in common by comparing the states
+// of both meshes (see the MeshState documentation).
+//
+// m's write lock and other's read lock must be held for this method to operate
+// safely.
+func (m *Mesh) Append(other *Mesh) {
+	if len(other.Vertices) == 0 {
+		// No vertices: nothing to do.
+		return
+	}
+
+	// appendData appends a single data slice, y, to the given data slice, x.
+	// It operates similar to:
+	//
+	//  m.Vertices = append(m.Vertices, other.Vertices...)
+	//  ->
+	//  val = appendData(m.Vertices, other.Vertices)
+	//
+	// The main difference is that fixIndices below sometimes modifies it's
+	// behavior in order to generate correct indices for the data. By utilizing
+	// appendData instead of append directly; indices are automatically fixed
+	// below.
+	var (
+		appendData    = fastAppendSlice
+		dataLenBefore = uint32(len(m.Vertices))
+		fixIndices    = func() {}
+	)
+	if len(m.Indices) > 0 && len(other.Indices) > 0 {
+		// i.e. append(IndexedMesh, IndexedMesh); For this case in order to fix
+		// the indices we simply append each index of the second mesh offset by
+		// the data length of the first mesh (i.e. len(m.Vertices)).
+		fixIndices = func() {
+			for _, index := range other.Indices {
+				m.Indices = append(m.Indices, index+dataLenBefore)
+			}
+			m.IndicesChanged = true
+		}
+
+	} else if len(m.Indices) > 0 && len(other.Indices) == 0 {
+		// i.e. append(IndexedMesh, Mesh); For this case we need to fill in
+		// the missing indices (which in our case are simply offset counter
+		// values).
+		fixIndices = func() {
+			for i := 0; i < len(other.Vertices); i++ {
+				m.Indices = append(m.Indices, dataLenBefore+uint32(i))
+			}
+			m.IndicesChanged = true
+		}
+
+	} else if len(m.Indices) == 0 && len(other.Indices) > 0 {
+		// i.e. append(Mesh, IndexedMesh); For this case we don't need to fix
+		// the indices but we do need a different behavior from appendData;
+		// instead of simply appending the data slices together it will expand
+		// the slice data by looking at each index.
+		appendData = func(xx, yy interface{}) interface{} {
+			x := reflect.ValueOf(xx)
+			y := reflect.ValueOf(yy)
+			if y.Len() == 0 {
+				// Be careful not to index a slice that does not have any data.
+				return x.Interface()
+			}
+			for _, index := range other.Indices {
+				x = reflect.Append(x, y.Index(int(index)))
+			}
+			return x.Interface()
+		}
+	}
+
+	// Append vertices.
+	m.Vertices = appendData(m.Vertices, other.Vertices).([]Vec3)
+	m.VerticesChanged = true
+
+	// Handle handles the appension of two data slices, one from each mesh. It
+	// checks if the two data slices are differing in non-zero lengths (i.e. if
+	// one has colors but the other does not).
+	handle := func(x0, y0 interface{}, changed *bool) {
+		x := reflect.ValueOf(x0).Elem()
+		y := reflect.ValueOf(y0).Elem()
+		xSlice := x
+		ySlice := y
+		if x.Kind() == reflect.Interface {
+			xSlice = x.Elem()
+		}
+		if y.Kind() == reflect.Interface {
+			ySlice = y.Elem()
+		}
+		if (xSlice.Len() > 0) != (ySlice.Len() > 0) {
+			// The slices differ in non-zero lengths, e.g. one has colors but
+			// the other does not.
+			x.Set(reflect.Zero(x.Type()))
+			*changed = true
+			return
+		}
+
+		// Both slices are present, so append them together if needed.
+		if ySlice.Len() > 0 {
+			ap := appendData(xSlice.Interface(), ySlice.Interface())
+			x.Set(reflect.ValueOf(ap))
+			*changed = true
+		}
+	}
+
+	// Handle each data slice.
+	handle(&m.Colors, &other.Colors, &m.ColorsChanged)
+	handle(&m.Normals, &other.Normals, &m.NormalsChanged)
+	handle(&m.Bary, &other.Bary, &m.BaryChanged)
+
+	// Handle texture coordinates.
+	for i, tcs := range m.TexCoords {
+		handle(&tcs.Slice, &other.TexCoords[i].Slice, &tcs.Changed)
+		m.TexCoords[i] = tcs
+	}
+
+	// Handle vertex attributes.
+	for name, attrib := range m.Attribs {
+		otherAttrib := other.Attribs[name]
+		handle(
+			&attrib.Data,
+			&otherAttrib.Data,
+			&attrib.Changed,
+		)
+		m.Attribs[name] = attrib
+	}
+
+	// Now that we are done appending data, we fix the indices.
+	fixIndices()
 }
 
 // ClearData sets the data slices of this mesh to nil if m.KeepDataOnLoad is
