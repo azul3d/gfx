@@ -5,7 +5,7 @@
 package gfx
 
 // BlendState represents the blend state to use when rendering an object whose
-// AlphaMode == BlendedAlpha.
+// AlphaMode == AlphaBlend.
 type BlendState struct {
 	// The constant blend color to be used (e.g. with BConstantColor).
 	Color Color
