@@ -52,6 +52,10 @@ type Shader struct {
 	//  []gfx.Vec4
 	//  gfx.Mat4
 	//  []gfx.Mat4
+	//  gfx.Color
+	//  []gfx.Color
+	//  gfx.TexCoord
+	//  []gfx.TexCoord
 	Inputs map[string]interface{}
 
 	// The error log from compiling the shader program, if any. Only set once
