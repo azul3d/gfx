@@ -8,8 +8,8 @@ package main
 import (
 	"image"
 
-	"azul3d.org/gfx.v1"
-	"azul3d.org/gfx/window.v2"
+	"azul3d.org/gfx.v2"
+	"azul3d.org/gfx.v2/window"
 )
 
 // gfxLoop is responsible for drawing things to the window.

@@ -10,8 +10,8 @@ import (
 	"image"
 	"reflect"
 
-	"azul3d.org/gfx.v1"
-	"azul3d.org/gfx/window.v2"
+	"azul3d.org/gfx.v2"
+	"azul3d.org/gfx.v2/window"
 	"azul3d.org/keyboard.v1"
 	"azul3d.org/mouse.v1"
 )
@@ -24,10 +24,16 @@ func gfxLoop(w window.Window, r gfx.Renderer) {
 		events := make(chan window.Event, 256)
 
 		// Notify our channel anytime any event occurs.
+		//
+		// Instead of window.AllEvents, we could use a combination of masks to
+		// select just the ones we're interested in:
+		//
+		//  w.Notify(events, window.MouseEvents|window.KeyboardTypedEvents)
+		//
 		w.Notify(events, window.AllEvents)
 
 		// Wait for events.
-		for event := range events{
+		for event := range events {
 			// Use reflection to print the type of event:
 			fmt.Println("Event type:", reflect.TypeOf(event))
 
