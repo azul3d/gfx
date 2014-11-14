@@ -1,6 +1,6 @@
 # Azul3D - gfx
 
-This repository hosts Azul3D's graphics packages.
+This repository hosts Azul3D's graphics packages. For examples please see the `example` directory.
 
 | Package | Description |
 |---------|-------------|
