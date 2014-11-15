@@ -104,6 +104,7 @@ type Window interface {
 	//  if w.Keyboard().Down(keyboard.W) {
 	//      fmt.Println("The W key is currently held down")
 	//  }
+	//
 	Keyboard() *keyboard.Watcher
 
 	// Mouse returns a mouse watcher for the window. It can be used to tell if
@@ -112,6 +113,7 @@ type Window interface {
 	//  if w.Mouse().Down(mouse.Left) {
 	//      fmt.Println("The left mouse button is currently held down")
 	//  }
+	//
 	Mouse() *mouse.Watcher
 
 	// SetClipboard sets the clipboard string.
@@ -153,7 +155,8 @@ type Window interface {
 	// for this.
 	Notify(ch chan<- Event, m EventMask)
 
-	// Close closes the window, and causes Run() to return.
+	// Close closes the window, it must be called or else the main loop (and
+	// inheritely, the application) will not exit.
 	Close()
 }
 
