@@ -16,8 +16,8 @@ type DSFormat uint8
 // String returns a string name for this depth/stencil buffer format. For
 // example:
 //  Depth24AndStencil8 -> "Depth24AndStencil8"
-func (t DSFormat) String() string {
-	switch t {
+func (f DSFormat) String() string {
+	switch f {
 	case ZeroDSFormat:
 		return "ZeroDSFormat"
 	case Depth16:
@@ -29,7 +29,7 @@ func (t DSFormat) String() string {
 	case Depth24AndStencil8:
 		return "Depth24AndStencil8"
 	}
-	return fmt.Sprintf("DSFormat(%d)", t)
+	return fmt.Sprintf("DSFormat(%d)", f)
 }
 
 // IsDepth tells if f is a valid depth buffer format. It must be one of the
@@ -103,19 +103,20 @@ func (f DSFormat) StencilBits() uint8 {
 }
 
 const (
-	// Zero-value depth/stencil format. Used to represent nil/none/zero.
+	// ZeroDSFormat is a zero-value depth/stencil format.
 	ZeroDSFormat DSFormat = iota
 
-	// The 16-bit depth buffer format.
+	// Depth16 is the 16-bit depth-buffer-only format.
 	Depth16
 
-	// The 24-bit depth buffer format.
+	// Depth24 is the 24-bit depth-buffer-only format.
 	Depth24
 
-	// The 32-bit depth buffer format.
+	// Depth32 is the 32-bit depth-buffer-only format.
 	Depth32
 
-	// The 24-bit depth buffer, combined with 8-bit stencil buffer format.
+	// Depth24AndStencil8 is the combined 24-bit depth-buffer and 8-bit
+	// stencil-buffer format.
 	Depth24AndStencil8
 )
 
@@ -253,9 +254,8 @@ func (s chooseDSFormats) Less(ii, jj int) bool {
 		iCombined := s.s[ii].IsCombined()
 		if s.preferCombined {
 			return iCombined
-		} else {
-			return !iCombined
 		}
+		return !iCombined
 	}
 	return iDist < jDist
 }

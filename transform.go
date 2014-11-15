@@ -16,7 +16,7 @@ type Transformable interface {
 	Transform() *Transform
 }
 
-// CoordSpace represents a single coordinate space conversion.
+// CoordConv represents a single coordinate space conversion.
 //
 // World space is the top-most 'world' or 'global' space. A transform whose
 // parent is nil explicitly means the parent is the 'world'.
@@ -178,7 +178,7 @@ func (t *Transform) build() {
 	t.worldToLocal = &wtl
 }
 
-// Implements Transformable interface by simply returning t.
+// Transform implements the Transformable interface by simply returning t.
 func (t *Transform) Transform() *Transform {
 	return t
 }

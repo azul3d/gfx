@@ -42,25 +42,31 @@ func (t TexFilter) Mipmapped() bool {
 }
 
 const (
-	// Samples the nearest pixel.
+	// Nearest samples the nearest pixel.
 	Nearest TexFilter = iota
 
-	// Samples the four closest pixels and linearly interpolates them.
+	// Linear samples the four closest pixels and linearly interpolates them.
 	Linear
 
-	// Samples point from the closest mipmap. May not be used as a magnification
-	// filter.
+	// NearestMipmapNearest samples the pixel from the nearest mipmap, it may
+	// not be used as a magnification filter.
 	NearestMipmapNearest
 
-	// Bilinear filter the pixel from the closest mipmap. May not be used as a
-	// magnification filter.
+	// LinearMipmapNearest (AKA Bilinear filtering) samples the pixel from the
+	// nearest mipmap.
+	//
+	// It may not be used as a magnification filter.
 	LinearMipmapNearest
 
-	// Samples the pixel from two closest mipmaps, and linearly blends. May not
-	// be used as a magnification filter.
+	// NearestMipmapLinear samples the pixel from the two closest mipmaps, and
+	// linearly blends the result.
+	//
+	// It may not be used as a magnification filter.
 	NearestMipmapLinear
 
-	// (Trilinear filtering) Bilinearly filters the pixel from two mipmaps, and
-	// linearly blends the result. May not be used as a magnification filter.
+	// LinearMipmapLinear (AKA Trilinear filtering) bilinearly filters the
+	// pixel from the two mipmaps, and linear blends the result.
+	//
+	// It may not be used as a magnification filter.
 	LinearMipmapLinear
 )

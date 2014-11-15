@@ -65,7 +65,8 @@ func (t TexFormat) Bits() (r, g, b, a uint8) {
 }
 
 const (
-	// Zero-value texture format. Used to represent nil/none/zero.
+	// ZeroTexFormat is the zero-value texture format, it is not a valid format
+	// and is mainly used to catch zero-value errors.
 	ZeroTexFormat TexFormat = iota
 
 	// RGBA is a standard 32-bit premultiplied alpha image format.

@@ -17,7 +17,7 @@ type Color struct {
 	R, G, B, A float32
 }
 
-// Implements image/color.Color interface.
+// RGBA implements the color.Color interface.
 func (c Color) RGBA() (r, g, b, a uint32) {
 	r = uint32(c.R * fMaxUint16)
 	g = uint32(c.G * fMaxUint16)
@@ -41,4 +41,4 @@ func colorModel(c color.Color) color.Color {
 
 // ColorModel represents the graphics color model (i.e. normalized 32-bit
 // floating point values RGBA color).
-var ColorModel color.Model = color.ModelFunc(colorModel)
+var ColorModel = color.ModelFunc(colorModel)

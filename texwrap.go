@@ -27,18 +27,18 @@ func (t TexWrap) String() string {
 }
 
 const (
-	// The extra area of the texture is repeated into infinity.
+	// Repeat repeats the extra area of the texture into infinity.
 	Repeat TexWrap = iota
 
-	// The extra area of the texture is represented by stretching the edge
-	// pixels out into infinity.
+	// Clamp clamps the extra area of the texture by stretching the edge pixels
+	// out into infinity.
 	Clamp
 
-	// The extra area of the texture is represented by the border color
-	// specified on the texture object.
+	// BorderColor represents the extra area of the texture by the border color
+	// specified on the Texture object.
 	BorderColor
 
-	// The extra area of the texture is represented by itself mirrored into
+	// Mirror represents the extra area of the texture by mirroring itself into
 	// infinity.
 	Mirror
 )

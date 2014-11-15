@@ -77,22 +77,54 @@ var DefaultBlendState = BlendState{
 type BlendOp uint8
 
 const (
+	// BZero is the zero-value blend operand (e.g. zero color).
 	BZero BlendOp = iota
+
+	// BOne is the one-value blend operand (e.g. full color).
 	BOne
+
+	// BSrcColor is the blend operand for source color.
 	BSrcColor
+
+	// BOneMinusSrcColor is the blend operand for 1 - src.
 	BOneMinusSrcColor
+
+	// BDstColor is the blend operand for destination color.
 	BDstColor
+
+	// BOneMinusDstColor is the blend operand for 1 - dst.
 	BOneMinusDstColor
+
+	// BSrcAlpha is the blend operand for source alpha.
 	BSrcAlpha
+
+	// BOneMinusSrcAlpha is the blend operand for 1 - src.alpha.
 	BOneMinusSrcAlpha
+
+	// BDstAlpha is the blend operand for dst.alpha.
 	BDstAlpha
+
+	// BOneMinusDstAlpha is the blend operand for 1 - dst.alpha.
 	BOneMinusDstAlpha
+
+	// BConstantColor is the blend operand for a constant color (as set in the
+	// BlendState.Color field).
 	BConstantColor
+
+	// BOneMinusConstantColor is the blend operand for 1 - a constant color (as
+	// set in the BlendState.Color field).
 	BOneMinusConstantColor
+
+	// BConstantAlpha is the blend operand for a constant alpha (as set in the
+	// BlendState.Color field).
 	BConstantAlpha
+
+	// BOneMinusConstantAlpha is the blend operand for 1 - a constant alpha (as
+	// set in the BlendState.Color field).
 	BOneMinusConstantAlpha
 
-	// Not applicable for use in BlendState.SrcRGB.
+	// BSrcAlphaSaturate is the blend operand for source alpha saturation. It
+	// is not applicable for use in the BlendState.SrcRGB field.
 	BSrcAlphaSaturate
 )
 
