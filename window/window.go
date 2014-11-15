@@ -161,6 +161,37 @@ type Window interface {
 	Close()
 }
 
+// numWindows maintains the count of open windows.
+var numWindows struct {
+	sync.Mutex
+	N int
+}
+
+// Num tells the number of windows that are currently open, after adding the
+// given integer to the count.
+//
+// Query how many windows are currently open:
+//
+//  open := window.Num(0)
+//  fmt.Println(open) // e.g. "1"
+//
+// Add two windows to the current count (1) and fetch the new value:
+//
+//  open := window.Num(2)
+//  fmt.Println(open) // e.g. "3"
+//
+// Implementors of the Window interface are the only ones that should modify
+// the window count.
+//
+// This function is safe for access from multiple goroutines concurrently.
+func Num(n int) int {
+	numWindows.Lock()
+	numWindows.N += n
+	n = numWindows.N
+	numWindows.Unlock()
+	return n
+}
+
 // Run opens a window with the given properties and runs the given graphics
 // loop in a separate goroutine.
 //
