@@ -190,16 +190,16 @@ func gfxLoop(w window.Window, r gfx.Renderer) {
 		// Depending on keyboard state, transform the triangle.
 		kb := w.Keyboard()
 		if kb.Down(keyboard.ArrowLeft) {
-			v.X -= 1
+			v.X--
 		}
 		if kb.Down(keyboard.ArrowRight) {
-			v.X += 1
+			v.X++
 		}
 		if kb.Down(keyboard.ArrowDown) {
-			v.Y -= 1
+			v.Y--
 		}
 		if kb.Down(keyboard.ArrowUp) {
-			v.Y += 1
+			v.Y++
 		}
 
 		// Apply movement relative to the frame rate.

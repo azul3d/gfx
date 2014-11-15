@@ -10,7 +10,7 @@ import (
 	"math"
 )
 
-// Calculates and returns a mandelbrot image.
+// Mandelbrot calculates and returns a mandelbrot image.
 func Mandelbrot(w, h, maxIterations int, zoom, posX, posY float64) *image.RGBA {
 	var (
 		img                        = image.NewRGBA(image.Rect(0, 0, w, h))
