@@ -21,38 +21,62 @@ import (
 type EventMask uint32
 
 const (
-	// Event mask matching no events at all.
+	// NoEvents is a event mask matching no events at all.
 	NoEvents EventMask = 0
 
-	// Each event mask below matches it's corresponding event (defined in this
-	// package) without the `Events` suffix.
-	CloseEvents              EventMask = 1 << 0
-	DamagedEvents            EventMask = 1 << 1
-	CursorMovedEvents        EventMask = 1 << 2
-	CursorEnterEvents        EventMask = 1 << 3
-	CursorExitEvents         EventMask = 1 << 4
-	MinimizedEvents          EventMask = 1 << 5
-	RestoredEvents           EventMask = 1 << 6
-	GainedFocusEvents        EventMask = 1 << 7
-	LostFocusEvents          EventMask = 1 << 8
-	MovedEvents              EventMask = 1 << 9
-	ResizedEvents            EventMask = 1 << 10
-	FramebufferResizedEvents EventMask = 1 << 11
-	ItemsDroppedEvents       EventMask = 1 << 12
+	// CloseEvents is a event mask matching window.Close events.
+	CloseEvents EventMask = 1 << 0
 
-	// Event mask for the mouse.Event event type.
+	// DamagedEvents is a event mask matching window.Damaged events.
+	DamagedEvents EventMask = 1 << 1
+
+	// CursorMovedEvents is a event mask matching window.CursorMoved events.
+	CursorMovedEvents EventMask = 1 << 2
+
+	// CursorEnterEvents is a event mask matching window.CursorEnter events.
+	CursorEnterEvents EventMask = 1 << 3
+
+	// CursorExitEvents is a event mask matching window.CursorExit events.
+	CursorExitEvents EventMask = 1 << 4
+
+	// MinimizedEvents is a event mask matching window.Minimized events.
+	MinimizedEvents EventMask = 1 << 5
+
+	// RestoredEvents is a event mask matching window.Restored events.
+	RestoredEvents EventMask = 1 << 6
+
+	// GainedFocusEvents is a event mask matching window.GainedFocus events.
+	GainedFocusEvents EventMask = 1 << 7
+
+	// LostFocusEvents is a event mask matching window.LostFocus events.
+	LostFocusEvents EventMask = 1 << 8
+
+	// MovedEvents is a event mask matching window.Moved events.
+	MovedEvents EventMask = 1 << 9
+
+	// ResizedEvents is a event mask matching window.Resized events.
+	ResizedEvents EventMask = 1 << 10
+
+	// FramebufferResizedEvents is a event mask matching
+	// window.FramebufferResized events.
+	FramebufferResizedEvents EventMask = 1 << 11
+
+	// ItemsDroppedEvents is a event mask matching window.ItemsDropped events.
+	ItemsDroppedEvents EventMask = 1 << 12
+
+	// MouseEvents is a event mask matching mouse.Event events.
 	MouseEvents EventMask = 1 << 13
 
-	// Event mask for the mouse.Scrolled event type.
+	// MouseScrolledEvents is a event mask matching mouse.Scrolled events.
 	MouseScrolledEvents EventMask = 1 << 14
 
-	// Event mask for the keyboard.TypedEvent event type.
+	// KeyboardTypedEvents is a event mask matching keyboard.TypedEvent events.
 	KeyboardTypedEvents EventMask = 1 << 15
 
-	// Event mask for the keyboard.StateEvent event type.
+	// KeyboardStateEvents is a event mask matching keyboard.StateEvent events.
 	KeyboardStateEvents EventMask = 1 << 16
 
-	// Event mask matching all possible events.
+	// AllEvents is a event mask matching all possible events.
 	AllEvents = EventMask(math.MaxUint32)
 )
 
