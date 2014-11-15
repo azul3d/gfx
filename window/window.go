@@ -87,14 +87,14 @@ type Window interface {
 	Props() *Props
 
 	// Request makes a request to use a new set of properties, p. It is then
-	// reccomended to make changes to the window using something like:
+	// recommended to make changes to the window using something like:
 	//  props := window.Props()
 	//  props.SetTitle("Hello World!")
 	//  props.SetSize(640, 480)
 	//  window.Request(props)
 	//
 	// Interpretation of the given properties is left strictly up to the
-	// platform dependant implementation (for instance, on Android you cannot
+	// platform dependent implementation (for instance, on Android you cannot
 	// set the window's size, so instead a request for this is simply ignored.
 	Request(p *Props)
 
@@ -141,7 +141,7 @@ type Window interface {
 	//  w.Notify(ch, NoEvents)
 	//
 	// Multiple calls to Events with different channels works as you would
-	// expect, each channel receives a copy of the events independant of other
+	// expect, each channel receives a copy of the events independent of other
 	// ones.
 	//
 	// Warning: Many people use high-precision mice, some which can reach well
@@ -149,7 +149,7 @@ type Window interface {
 	// highly recommended.
 	//
 	// Warning: Depending on the operating system, window manager, etc, some of
-	// the events may never be sent or may only be sent sporiadically, so plan
+	// the events may never be sent or may only be sent sporadically, so plan
 	// for this.
 	Notify(ch chan<- Event, m EventMask)
 
