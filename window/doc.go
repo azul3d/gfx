@@ -182,6 +182,6 @@
 // The examples subdirectory of the gfx package contains several examples
 // which utilize this package. Please see:
 //
-// https://godoc.org/azul3d.org/gfx.v2#hdr-Examples
+// https://azul3d.org/gfx.v2#hdr-Examples
 //
 package window
