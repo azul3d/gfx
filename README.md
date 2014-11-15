@@ -27,14 +27,20 @@ This repository hosts Azul3D's graphics packages. For examples please see the `e
 * Renderer now uses just one OpenGL context (see [#24](https://github.com/azul3d/gfx/issues/24)).
 * Improved package documentation ([view commit](https://github.com/azul3d/gfx-gl2/commit/493f72dbb36547e394f2d4995ee7d74dbf7b86d4)).
 
+[Full v2 Changelog](https://github.com/azul3d/gfx/compare/v1.0.1...v2).
+
 ## Version 1.0.1
 
 ##### [gfx.v1](https://azul3d.org/gfx.v1) changes:
 
 * Fixed a bug causing Transforms to be constantly recalculated (see [#16](https://github.com/azul3d/gfx/issues/16)).
 
+[Full v1.0.1 Changelog](https://github.com/azul3d/gfx/compare/v1...v1.0.1).
+
 ## Version 1
 
 ##### [gfx.v1](https://azul3d.org/gfx.v1) changes:
 
 * Initial implementation.
+
+[Full v1 Changelog](https://github.com/azul3d/gfx/compare/24fcb440482034e45fba7fcbdd21fa9a7abbe6e6...v1).
