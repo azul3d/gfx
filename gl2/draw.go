@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"image"
 
-	"azul3d.org/gfx.v1"
-	"azul3d.org/gfx/gl2.v2/internal/gl"
+	"azul3d.org/gfx.v2"
+	"azul3d.org/gfx.v2/gl2/internal/gl"
 	"azul3d.org/lmath.v1"
 )
 

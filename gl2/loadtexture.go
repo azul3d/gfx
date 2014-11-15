@@ -12,9 +12,9 @@ import (
 	"runtime"
 	"unsafe"
 
-	"azul3d.org/gfx.v1"
-	"azul3d.org/gfx/gl2.v2/internal/gl"
-	"azul3d.org/gfx/gl2.v2/internal/resize"
+	"azul3d.org/gfx.v2"
+	"azul3d.org/gfx.v2/gl2/internal/gl"
+	"azul3d.org/gfx.v2/gl2/internal/resize"
 )
 
 type nativeTexture struct {
@@ -46,10 +46,12 @@ func newNativeTexture(r *Renderer, internalFormat int32, width, height int) *nat
 	return tex
 }
 
+// Destroy implements the gfx.Destroyable interface.
 func (n *nativeTexture) Destroy() {
 	n.destroyHandler(n)
 }
 
+// ChosenFormat implements the gfx.NativeTexture interface.
 func (n *nativeTexture) ChosenFormat() gfx.TexFormat {
 	return unconvertTexFormat(n.internalFormat)
 }
@@ -74,6 +76,7 @@ func fbErrorString(err uint32) string {
 	return fmt.Sprintf("%d", err)
 }
 
+// Download implements the gfx.Downloadable interface.
 func (n *nativeTexture) Download(rect image.Rectangle, complete chan image.Image) {
 	if !n.r.glArbFramebufferObject {
 		// We don't have GL_ARB_framebuffer_object extension, we can't do this
@@ -208,7 +211,7 @@ func prepareImage(npot bool, img image.Image) *image.RGBA {
 	return rgba
 }
 
-// Implements gfx.Downloadable interface.
+// Download implements the gfx.Downloadable interface.
 func (r *Renderer) Download(rect image.Rectangle, complete chan image.Image) {
 	r.hookedDownload(rect, complete, nil, nil)
 }
@@ -353,7 +356,7 @@ func unconvertTexFormat(f int32) gfx.TexFormat {
 	panic("unknown format")
 }
 
-// Implements gfx.Renderer interface.
+// LoadTexture implements the gfx.Renderer interface.
 func (r *Renderer) LoadTexture(t *gfx.Texture, done chan *gfx.Texture) {
 	// Lock the texture until we are done loading it.
 	t.Lock()

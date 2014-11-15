@@ -15,8 +15,8 @@ import (
 	"sync"
 
 	"azul3d.org/clock.v1"
-	"azul3d.org/gfx.v1"
-	"azul3d.org/gfx/gl2.v2/internal/gl"
+	"azul3d.org/gfx.v2"
+	"azul3d.org/gfx.v2/gl2/internal/gl"
 )
 
 // Used when attempting to create an OpenGL 2.0 renderer in a lesser OpenGL context.
@@ -132,7 +132,7 @@ type Renderer struct {
 	renderComplete chan struct{}
 }
 
-// Implements gfx.Renderer interface.
+// Clock implements the gfx.Renderer interface.
 func (r *Renderer) Clock() *clock.Clock {
 	return r.clock
 }
@@ -140,32 +140,32 @@ func (r *Renderer) Clock() *clock.Clock {
 // Short methods that just call the hooked methods (hooked methods are used in
 // rtt.go file for render to texture things).
 
-// Implements gfx.Canvas interface.
+// Clear implements the gfx.Canvas interface.
 func (r *Renderer) Clear(rect image.Rectangle, bg gfx.Color) {
 	r.hookedClear(rect, bg, nil, nil)
 }
 
-// Implements gfx.Canvas interface.
+// ClearDepth implements the gfx.Canvas interface.
 func (r *Renderer) ClearDepth(rect image.Rectangle, depth float64) {
 	r.hookedClearDepth(rect, depth, nil, nil)
 }
 
-// Implements gfx.Canvas interface.
+// ClearStencil implements the gfx.Canvas interface.
 func (r *Renderer) ClearStencil(rect image.Rectangle, stencil int) {
 	r.hookedClearStencil(rect, stencil, nil, nil)
 }
 
-// Implements gfx.Canvas interface.
+// Draw implements the gfx.Canvas interface.
 func (r *Renderer) Draw(rect image.Rectangle, o *gfx.Object, c *gfx.Camera) {
 	r.hookedDraw(rect, o, c, nil, nil)
 }
 
-// Implements gfx.Canvas interface.
+// QueryWait implements the gfx.Canvas interface.
 func (r *Renderer) QueryWait() {
 	r.hookedQueryWait(nil, nil)
 }
 
-// Implements gfx.Canvas interface.
+// Render implements the gfx.Canvas interface.
 func (r *Renderer) Render() {
 	r.hookedRender(nil, nil)
 }
@@ -347,7 +347,7 @@ func (r *Renderer) queryWait() {
 	}
 }
 
-// Implements gfx.Renderer interface.
+// GPUInfo implements the gfx.Renderer interface.
 func (r *Renderer) GPUInfo() gfx.GPUInfo {
 	return r.gpuInfo
 }

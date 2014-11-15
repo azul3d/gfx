@@ -8,7 +8,7 @@ import (
 	"image"
 	"sync"
 
-	"azul3d.org/gfx.v1"
+	"azul3d.org/gfx.v2"
 )
 
 // baseCanvas implements portions of a gfx.Canvas shared between Renderer and

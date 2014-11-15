@@ -7,8 +7,8 @@ package gl2
 import (
 	"image"
 
-	"azul3d.org/gfx.v1"
-	"azul3d.org/gfx/gl2.v2/internal/gl"
+	"azul3d.org/gfx.v2"
+	"azul3d.org/gfx.v2/gl2/internal/gl"
 )
 
 // Set this to true to disable state guarding (i.e. avoiding useless OpenGL

@@ -9,8 +9,8 @@ import (
 	"strings"
 	"unsafe"
 
-	"azul3d.org/gfx.v1"
-	"azul3d.org/gfx/gl2.v2/internal/gl"
+	"azul3d.org/gfx.v2"
+	"azul3d.org/gfx.v2/gl2/internal/gl"
 )
 
 // nativeShader is stored inside the *Shader.Native interface and stores GLSL
@@ -57,7 +57,7 @@ func (r *Renderer) freeShaders() {
 	r.shadersToFree.Unlock()
 }
 
-// Implements gfx.Renderer interface.
+// LoadShader implements the gfx.Renderer interface.
 func (r *Renderer) LoadShader(s *gfx.Shader, done chan *gfx.Shader) {
 	// Lock the shader until we are done loading it.
 	s.Lock()

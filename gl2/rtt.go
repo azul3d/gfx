@@ -11,8 +11,8 @@ import (
 	"runtime"
 	"sync"
 
-	"azul3d.org/gfx.v1"
-	"azul3d.org/gfx/gl2.v2/internal/gl"
+	"azul3d.org/gfx.v2"
+	"azul3d.org/gfx.v2/gl2/internal/gl"
 )
 
 func (r *Renderer) freeFBOs() {
@@ -240,7 +240,7 @@ func checkFramebufferError(target uint32) error {
 	return fmt.Errorf("unkown framebuffer error (%d)", err)
 }
 
-// Implements gfx.Renderer interface.
+// RenderToTexture implements the gfx.Renderer interface.
 func (r *Renderer) RenderToTexture(cfg gfx.RTTConfig) gfx.Canvas {
 	if !cfg.Valid() {
 		panic("RenderToTexture(): Configuration is invalid!")

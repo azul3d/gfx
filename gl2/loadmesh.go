@@ -9,8 +9,8 @@ import (
 	"runtime"
 	"unsafe"
 
-	"azul3d.org/gfx.v1"
-	"azul3d.org/gfx/gl2.v2/internal/gl"
+	"azul3d.org/gfx.v2"
+	"azul3d.org/gfx.v2/gl2/internal/gl"
 )
 
 type nativeAttrib struct {
@@ -36,21 +36,21 @@ func finalizeMesh(n *nativeMesh) {
 	n.r.meshesToFree.Unlock()
 }
 
-// Implements gfx.Destroyable interface.
+// Destroy implements the gfx.Destroyable interface.
 func (n *nativeMesh) Destroy() {
 	finalizeMesh(n)
 }
 
-func (r *Renderer) createVBO() (vboId uint32) {
+func (r *Renderer) createVBO() (vboID uint32) {
 	// Generate new VBO.
-	gl.GenBuffers(1, &vboId)
+	gl.GenBuffers(1, &vboID)
 	//gl.Execute()
 	return
 }
 
-func (r *Renderer) updateVBO(usageHint int32, dataSize uintptr, dataLength int, data unsafe.Pointer, vboId uint32) {
+func (r *Renderer) updateVBO(usageHint int32, dataSize uintptr, dataLength int, data unsafe.Pointer, vboID uint32) {
 	// Bind the VBO now.
-	gl.BindBuffer(gl.ARRAY_BUFFER, vboId)
+	gl.BindBuffer(gl.ARRAY_BUFFER, vboID)
 
 	// Fill the VBO with the data.
 	gl.BufferData(
@@ -62,14 +62,14 @@ func (r *Renderer) updateVBO(usageHint int32, dataSize uintptr, dataLength int, 
 	//gl.Execute()
 }
 
-func (r *Renderer) deleteVBO(vboId *uint32) {
+func (r *Renderer) deleteVBO(vboID *uint32) {
 	// Delete the VBO.
-	if *vboId == 0 {
+	if *vboID == 0 {
 		return
 	}
-	gl.DeleteBuffers(1, vboId)
+	gl.DeleteBuffers(1, vboID)
 	//gl.Execute()
-	*vboId = 0 // Just for safety.
+	*vboID = 0 // Just for safety.
 }
 
 // attribSize returns the number of rows, and the size of each row measured in
@@ -198,7 +198,7 @@ func (r *Renderer) freeMeshes() {
 	r.meshesToFree.Unlock()
 }
 
-// Implements gfx.Renderer interface.
+// LoadMesh implements the gfx.Renderer interface.
 func (r *Renderer) LoadMesh(m *gfx.Mesh, done chan *gfx.Mesh) {
 	// Lock the mesh until we are done loading it.
 	m.Lock()
