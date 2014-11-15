@@ -11,7 +11,6 @@ import (
 	"log"
 	"math"
 	"os"
-	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -45,7 +44,7 @@ type glfwWindow struct {
 	mouse                                              *mouse.Watcher
 	keyboard                                           *keyboard.Watcher
 	renderer                                           *gl2.Renderer
-	window, assets                                     *glfw.Window
+	window                                             *glfw.Window
 	monitor                                            *glfw.Monitor
 	shutdown                                           chan bool
 	runOnMain                                          chan func()
@@ -527,13 +526,6 @@ func doRun(gfxLoop func(w Window, r gfx.Renderer), p *Props) {
 	}
 	defer glfw.Terminate()
 
-	// Create the asset context by creating a hidden window.
-	glfw.WindowHint(glfw.Visible, 0)
-	assets, err := glfw.CreateWindow(32, 32, "assets", nil, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	// Specify the primary monitor if we want fullscreen, store the monitor
 	// regardless for centering the window.
 	var targetMonitor, monitor *glfw.Monitor
@@ -568,7 +560,7 @@ func doRun(gfxLoop func(w Window, r gfx.Renderer), p *Props) {
 
 	// Create the render window.
 	width, height := p.Size()
-	window, err := glfw.CreateWindow(width, height, p.Title(), targetMonitor, assets)
+	window, err := glfw.CreateWindow(width, height, p.Title(), targetMonitor, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -586,30 +578,6 @@ func doRun(gfxLoop func(w Window, r gfx.Renderer), p *Props) {
 	// Write renderer debug output (shader errors, etc) to stdout.
 	r.SetDebugOutput(os.Stdout)
 
-	// Channel to signal shutdown to the loader.
-	loaderShutdown := make(chan bool, 1)
-
-	// Spawn a goroutine to manage loading of resources.
-	go func() {
-		// All OpenGL related calls must occur in the same OS thread.
-		runtime.LockOSThread()
-		defer runtime.UnlockOSThread()
-
-		// OpenGL loading context must be active.
-		assets.MakeContextCurrent()
-		defer glfw.DetachCurrentContext()
-
-		// Execute loader functions until shutdown.
-		for {
-			select {
-			case <-loaderShutdown:
-				return
-			case fn := <-r.LoaderExec:
-				fn()
-			}
-		}
-	}()
-
 	// Initialize window.
 	w := &glfwWindow{
 		props:     p,
@@ -618,7 +586,6 @@ func doRun(gfxLoop func(w Window, r gfx.Renderer), p *Props) {
 		keyboard:  keyboard.NewWatcher(),
 		renderer:  r,
 		window:    window,
-		assets:    assets,
 		monitor:   monitor,
 		shutdown:  make(chan bool, 1),
 		runOnMain: make(chan func(), 32),
@@ -656,7 +623,6 @@ func doRun(gfxLoop func(w Window, r gfx.Renderer), p *Props) {
 			w.Unlock()
 
 		case <-w.shutdown:
-			loaderShutdown <- true
 			w.window.Destroy()
 			return
 
