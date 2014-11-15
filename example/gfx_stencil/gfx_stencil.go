@@ -275,7 +275,7 @@ func shapeSpawner(r gfx.Renderer, shader *gfx.Shader, camera *gfx.Camera) {
 		}
 
 		// Create a shape.
-		shape := createShape(r, absPath("assets/textures/shapes.png"), which)
+		shape := createShape(r, absPath("gfx_stencil/shapes.png"), which)
 		shape.Shader = shader
 		shape.SetPos(math.Vec3{0, -1, 0})
 
@@ -341,7 +341,7 @@ func gfxLoop(w window.Window, r gfx.Renderer) {
 	shader.GLSLFrag = glslFrag
 
 	// Create the background.
-	bgPicture := createPicture(r, absPath("assets/textures/yi_han_cheol.jpg"))
+	bgPicture := createPicture(r, absPath("gfx_stencil/yi_han_cheol.jpg"))
 	bgPicture.Shader = shader
 
 	// Create a camera.
