@@ -88,6 +88,7 @@ type Window interface {
 
 	// Request makes a request to use a new set of properties, p. It is then
 	// recommended to make changes to the window using something like:
+	//
 	//  props := window.Props()
 	//  props.SetTitle("Hello World!")
 	//  props.SetSize(640, 480)
