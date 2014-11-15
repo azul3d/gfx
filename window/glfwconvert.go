@@ -9,7 +9,7 @@ import (
 	"azul3d.org/keyboard.v1"
 	"azul3d.org/mouse.v1"
 
-	glfw "azul3d.org/native/glfw.v3.1"
+	glfw "azul3d.org/native/glfw.v3"
 )
 
 func convertMouseAction(a glfw.Action) mouse.State {
