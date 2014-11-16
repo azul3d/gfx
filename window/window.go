@@ -192,6 +192,65 @@ func Num(n int) int {
 	return n
 }
 
+// ErrSingleWindow is returned by New if you attempt to create multiple windows
+// on a system that does not support it.
+var ErrSingleWindow = errors.New("only a single window is allowed")
+
+// New creates a new window, and is safe to call from any goroutine.
+//
+// If you just want to create a single window, use the simpler Run function
+// instead.
+//
+// If the properties, p, are nil then DefaultProps is used instead.
+//
+// If you attempt to create multiple windows and the system does not allow it,
+// then ErrSingleWindow will be returned (e.g. on mobile platforms where there
+// is no concept of multiple windows).
+//
+// If any error is returned, the window could not be created, and the returned
+// window and renderer are nil.
+//
+// New requests several operations be run on the main loop internally, because
+// of this it cannot be run on the main thread itself. That is, MainLoop must
+// be running for New to complete.
+//
+// The following code works fine, because New is run in a seperate goroutine:
+//
+//  func main() {
+//      go func() {
+//          // New runs in a seperate goroutine, after MainLoop has started.
+//          w, r, err := window.New(nil)
+//          ... use w, r, handle err ...
+//      }()
+//      window.MainLoop()
+//  }
+//
+// The following code does not work, a deadlock occurs because MainLoop is
+// called after New, and New cannot complete unless MainLoop is running.
+//
+//  func main() {
+//      // Won't ever complete: the main loop isn't running yet!
+//      w, r, err := window.New(nil)
+//      ... use w, r, handle err ...
+//      window.MainLoop()
+//  }
+//
+func New(p *Props) (w Window, r gfx.Renderer, err error) {
+	if p == nil {
+		p = DefaultProps
+	}
+
+	// Create a new window via the platform-specific backend.
+	w, r, err = doNew(p)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// No error occured, increment the number of open windows and return.
+	Num(1)
+	return w, r, err
+}
+
 // Run opens a window with the given properties and runs the given graphics
 // loop in a separate goroutine.
 //
