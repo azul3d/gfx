@@ -14,9 +14,11 @@ import (
 )
 
 // EventMask is a bitmask of event types. They can be combined, for instance:
+//
 //  mask := GenericEvents
 //  mask |= MouseEvents
 //  mask |= KeyboardEvents
+//
 // would select generic, mouse, and keyboard events.
 type EventMask uint32
 
@@ -141,6 +143,7 @@ type Window interface {
 	// channel, if you do then the same event will be sent over the channel
 	// multiple times. When you no longer want the channel to receive events
 	// then call this function again with NoEvents:
+	//
 	//  w.Notify(ch, NoEvents)
 	//
 	// Multiple calls to Events with different channels works as you would

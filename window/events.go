@@ -14,11 +14,13 @@ import (
 //
 // Using a type assertion or a type switch you can determine the actualy type
 // of event which contains much more information:
+//
 //  select ev := event.(type){
 //  case *keyboard.StateEvent:
 //      fmt.Println("The keyboard button", ev.Key, "is now", ev.State)
 //      // example: "The keyboard button keyboard.A is now keyboard.Down"
 //  }
+//
 type Event interface {
 	Time() time.Time
 }
