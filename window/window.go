@@ -199,11 +199,6 @@ func Num(n int) int {
 // dependant implementation (for instance, on Android you cannot set the
 // window's size so it is simply ignored).
 //
-// Requesting a specific framebuffer configuration via Props.SetPrecision is
-// just a request. You may be given some other configuration (most likely one
-// closest to it). You can check what you received by looking at:
-//  r.Canvas.Precision()
-//
 // If the properties are nil, DefaultProps is used instead.
 func Run(gfxLoop func(w Window, r gfx.Renderer), p *Props) {
 	runtime.LockOSThread()

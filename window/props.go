@@ -300,14 +300,36 @@ func (p *Props) CursorGrabbed() bool {
 	return grabbed
 }
 
-// SetPrecision sets the framebuffer precision to be requested.
+// SetPrecision sets the framebuffer precision to be requested when the window
+// is created.
+//
+// Requesting a specific framebuffer precision is simply that -- a request. No
+// guarantee is made that you will receive that precision, as it is completely
+// hardware dependent.
+//
+// To check what framebuffer precision you actually receive, look at the
+// precision of the renderer's canvas:
+//
+//  r.Canvas.Precision()
+//
 func (p *Props) SetPrecision(precision gfx.Precision) {
 	p.l.Lock()
 	p.precision = precision
 	p.l.Unlock()
 }
 
-// Precision returns the requested framebuffer precision to be requested.
+// Precision returns the framebuffer precision that is to be requested when the
+// window is created.
+//
+// As mentioned by the SetPrecision documentation, the precision returned by
+// this function is the one you request -- not strictly the precision that you
+// will receive (as that is hardware dependent).
+//
+// To check what framebuffer precision you actually receive, look at the
+// precision of the renderer's canvas:
+//
+//  r.Canvas.Precision()
+//
 func (p *Props) Precision() gfx.Precision {
 	p.l.RLock()
 	precision := p.precision
