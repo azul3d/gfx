@@ -8,7 +8,6 @@ package window
 import (
 	"fmt"
 	"image"
-	"log"
 	"math"
 	"os"
 	"strings"
@@ -23,6 +22,12 @@ import (
 )
 
 // TODO(slimsag): rebuild window when fullscreen/precision changes.
+
+var (
+	// Whether or not GLFW has been initialized yet (only modified on the main
+	// thread).
+	glfwInit bool
+)
 
 // intBool returns 0 or 1 depending on b.
 func intBool(b bool) int {
@@ -46,12 +51,13 @@ type glfwWindow struct {
 	renderer                                           *gl2.Renderer
 	window                                             *glfw.Window
 	monitor                                            *glfw.Monitor
-	shutdown                                           chan bool
-	runOnMain                                          chan func()
 	lastCursorX, lastCursorY                           float64
 	extWGLEXTSwapControlTear, extGLXEXTSwapControlTear bool
 	notifiers                                          []notifier
-	closed                                             bool
+	relayExit                                          chan struct{}
+
+	// Only modified on the main thread:
+	closed bool
 }
 
 // Implements the Window interface.
@@ -64,7 +70,7 @@ func (w *glfwWindow) Props() *Props {
 
 // Implements the Window interface.
 func (w *glfwWindow) Request(p *Props) {
-	w.runOnMain <- func() {
+	MainLoopChan <- func() {
 		w.useProps(p, false)
 	}
 }
@@ -87,7 +93,7 @@ func (w *glfwWindow) Mouse() *mouse.Watcher {
 
 // Implements the Window interface.
 func (w *glfwWindow) SetClipboard(clipboard string) {
-	w.runOnMain <- func() {
+	MainLoopChan <- func() {
 		w.Lock()
 		w.window.SetClipboardString(clipboard)
 		w.Unlock()
@@ -107,7 +113,26 @@ func (w *glfwWindow) Clipboard() string {
 
 // Implements the Window interface.
 func (w *glfwWindow) Close() {
-	w.shutdown <- true
+	// Destroy the window on the main thread.
+	var doubleClose bool
+	MainLoopChan <- func() {
+		// Protect against any double-closes that we might encounter.
+		if w.closed {
+			doubleClose = true
+			return
+		}
+		w.closed = true
+		w.window.Destroy()
+		Num(-1) // Decrement the number of open windows by one.
+	}
+
+	if !doubleClose {
+		// Signal that a window has closed to the main loop.
+		MainLoopChan <- nil
+
+		// Signal to the relay goroutine that it should exit.
+		w.relayExit <- struct{}{}
+	}
 }
 
 // Implements the Window interface.
@@ -148,7 +173,7 @@ func (w *glfwWindow) deleteNotifiers(ch chan<- Event) {
 // waitFor runs f on the main thread and waits for the function to complete.
 func (w *glfwWindow) waitFor(f func()) {
 	done := make(chan bool, 1)
-	w.runOnMain <- func() {
+	MainLoopChan <- func() {
 		f()
 		done <- true
 	}
@@ -318,7 +343,7 @@ func (w *glfwWindow) initCallbacks() {
 	w.window.SetCloseCallback(func(gw *glfw.Window) {
 		// If they want us to close the window, then close the window.
 		if w.Props().ShouldClose() {
-			w.Close()
+			go w.Close()
 
 			// Return so we don't give people the idea that they can rely on
 			// Close event below to cleanup things.
@@ -518,20 +543,22 @@ func (w *glfwWindow) initCallbacks() {
 	})
 }
 
-func doRun(gfxLoop func(w Window, r gfx.Renderer), p *Props) {
-	// Initialize GLFW, and later on invoke Terminate.
+func doNew(p *Props) (Window, gfx.Renderer, error) {
+	// TODO(slimsag): initialize GLFW only if not yet initialized.
+	// Initialize GLFW.
 	err := glfw.Init()
 	if err != nil {
-		log.Fatal(err)
+		return nil, nil, err
 	}
-	defer glfw.Terminate()
+	// TODO(slimsag): terminate GLFW when application exits.
+	//defer glfw.Terminate()
 
 	// Specify the primary monitor if we want fullscreen, store the monitor
 	// regardless for centering the window.
 	var targetMonitor, monitor *glfw.Monitor
 	monitor, err = glfw.GetPrimaryMonitor()
 	if err != nil {
-		log.Fatal(err)
+		return nil, nil, err
 	}
 	if p.Fullscreen() {
 		targetMonitor = monitor
@@ -562,17 +589,16 @@ func doRun(gfxLoop func(w Window, r gfx.Renderer), p *Props) {
 	width, height := p.Size()
 	window, err := glfw.CreateWindow(width, height, p.Title(), targetMonitor, nil)
 	if err != nil {
-		log.Fatal(err)
+		return nil, nil, err
 	}
 
 	// OpenGL rendering context must be active.
 	window.MakeContextCurrent()
-	defer glfw.DetachCurrentContext()
 
 	// Create the renderer.
-	r, err := gl2.New(false)
+	r, err := gl2.New(true)
 	if err != nil {
-		log.Fatal(err)
+		return nil, nil, err
 	}
 
 	// Write renderer debug output (shader errors, etc) to stdout.
@@ -587,8 +613,7 @@ func doRun(gfxLoop func(w Window, r gfx.Renderer), p *Props) {
 		renderer:  r,
 		window:    window,
 		monitor:   monitor,
-		shutdown:  make(chan bool, 1),
-		runOnMain: make(chan func(), 32),
+		relayExit: make(chan struct{}, 1),
 	}
 
 	// Test for adaptive vsync extensions.
@@ -599,44 +624,56 @@ func doRun(gfxLoop func(w Window, r gfx.Renderer), p *Props) {
 	w.initCallbacks()
 	w.useProps(p, true)
 
-	// Start the user-controlled graphics loop. If the graphics loop causes a
-	// panic to occur we want to be sure to recover it and properly terminate
-	// GLFW first -- since it e.g. restores the monitor resolution/gamma/etc.
+	// Done with OpenGL things on this window, for now.
+	glfw.DetachCurrentContext()
+
+	// This goroutine is responsible primarily for relaying render functions
+	// to the main thread channel.
 	go func() {
-		defer func() {
-			if r := recover(); r != nil {
-				glfw.Terminate()
-				panic(r)
-			}
-		}()
-		gfxLoop(w, r)
-	}()
+		updateFPS := time.NewTicker(1 * time.Second)
+		for {
+			select {
+			case <-w.relayExit:
+				updateFPS.Stop()
+				return
 
-	// Enter the (main) rendering loop.
-	updateFPS := time.Tick(1 * time.Second)
-	for {
-		select {
-		case <-updateFPS:
-			// Update title with FPS.
-			w.Lock()
-			w.updateTitle()
-			w.Unlock()
+			case <-updateFPS.C:
+				// Update title with FPS.
+				MainLoopChan <- func() {
+					// Don't execute functions on closed windows.
+					if w.closed {
+						return
+					}
+					w.Lock()
+					w.updateTitle()
+					w.Unlock()
+				}
 
-		case <-w.shutdown:
-			w.window.Destroy()
-			return
+			case fn := <-r.RenderExec:
+				MainLoopChan <- func() {
+					// Don't execute functions on closed windows.
+					if w.closed {
+						return
+					}
 
-		case fn := <-w.runOnMain:
-			fn()
+					// Before executing the OpenGL closure from the renderer,
+					// we make the context current.
+					window.MakeContextCurrent()
 
-		case fn := <-r.RenderExec:
-			if renderedFrame := fn(); renderedFrame {
-				// Swap OpenGL buffers.
-				window.SwapBuffers()
+					// Execute the render function.
+					if renderedFrame := fn(); renderedFrame {
+						// Swap OpenGL buffers.
+						window.SwapBuffers()
 
-				// Poll for events.
-				glfw.PollEvents()
+						// Poll for events.
+						glfw.PollEvents()
+					}
+
+					// Done with OpenGL things on this window, for now.
+					glfw.DetachCurrentContext()
+				}
 			}
 		}
-	}
+	}()
+	return w, r, nil
 }

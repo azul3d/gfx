@@ -5,8 +5,10 @@
 package window
 
 import (
+	"errors"
+	"log"
 	"math"
-	"runtime"
+	"sync"
 
 	"azul3d.org/gfx.v2"
 	"azul3d.org/keyboard.v1"
@@ -247,8 +249,16 @@ func New(p *Props) (w Window, r gfx.Renderer, err error) {
 		p = DefaultProps
 	}
 
-	// Create a new window via the platform-specific backend.
-	w, r, err = doNew(p)
+	// Run doNew on the main loop.
+	done := make(chan struct{}, 1)
+	MainLoopChan <- func() {
+		// Create a new window via the platform-specific backend.
+		w, r, err = doNew(p)
+		done <- struct{}{}
+	}
+	<-done
+
+	// Return if any error occured.
 	if err != nil {
 		return nil, nil, err
 	}

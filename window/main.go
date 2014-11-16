@@ -39,11 +39,14 @@ func MainLoop() {
 	for {
 		select {
 		case f := <-MainLoopChan:
-			// If the number of open windows is zero, then there is no need to
-			// continue the main loop: the application should exit.
-			if Num(0) == 0 {
+			// If the function is nil then a window has closed. We should check
+			// if the number of open windows is zero, and if so, the main loop
+			// can end.
+			if f == nil && Num(0) == 0 {
 				return
 			}
+
+			// If the function is non-nil, execute it.
 			if f != nil {
 				f()
 			}
