@@ -203,6 +203,10 @@ var ErrSingleWindow = errors.New("only a single window is allowed")
 //
 // If the properties, p, are nil then DefaultProps is used instead.
 //
+// Interpretation of the properties is left strictly up to the platform
+// dependent implementation (for instance, on Android you cannot set a window's
+// size, so it is ignored).
+//
 // If you attempt to create multiple windows and the system does not allow it,
 // then ErrSingleWindow will be returned (e.g. on mobile platforms where there
 // is no concept of multiple windows).
@@ -254,11 +258,9 @@ func New(p *Props) (w Window, r gfx.Renderer, err error) {
 // Run opens a window with the given properties and runs the given graphics
 // loop in a separate goroutine.
 //
-// Interpretation of the given properties is left strictly up to the platform
-// dependant implementation (for instance, on Android you cannot set the
-// window's size so it is simply ignored).
+// This function automatically locks the OS thread for you.
 //
-// If the properties are nil, DefaultProps is used instead.
+// For more documentation about the behavior of Run, see the New function.
 func Run(gfxLoop func(w Window, r gfx.Renderer), p *Props) {
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
