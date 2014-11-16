@@ -130,7 +130,7 @@
 // MainLoop functions yourself. The only requirement is that New cannot
 // complete unless MainLoop is already running.
 //
-// The following code works:
+// The following code works fine, because New is run in a seperate goroutine:
 //
 //  func main() {
 //      go func() {
@@ -141,7 +141,8 @@
 //      window.MainLoop()
 //  }
 //
-// The following code does not work (a deadlock occurs):
+// The following code does not work, a deadlock occurs because MainLoop is
+// called after New, and New cannot complete unless MainLoop is running.
 //
 //  func main() {
 //      // Won't ever complete: the main loop isn't running yet!
