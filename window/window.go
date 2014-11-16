@@ -262,13 +262,32 @@ func New(p *Props) (w Window, r gfx.Renderer, err error) {
 //
 // For more documentation about the behavior of Run, see the New function.
 func Run(gfxLoop func(w Window, r gfx.Renderer), p *Props) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
-	if p == nil {
-		p = NewProps()
-	}
 	if gfxLoop == nil {
 		panic("window: nil graphics loop function!")
 	}
-	doRun(gfxLoop, p)
+
+	// Create a new window in a seperate goroutine, because the New function
+	// requires that the main loop be running before it can complete.
+	go func() {
+		// Create the window with the given properties.
+		w, r, err := New(p)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// If the gfxLoop panics, we should still close the window (or else the
+		// user's screen resolution won't be restored, for example).
+		defer func() {
+			if r := recover(); r != nil {
+				w.Close()
+				panic(r)
+			}
+		}()
+
+		// Enter the graphics loop.
+		gfxLoop(w, r)
+	}()
+
+	// Enter the main loop now.
+	MainLoop()
 }
